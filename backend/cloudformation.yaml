@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template to deploy a PostgreSQL database on RDS and an EC2 instance running Django in a Docker container"
+
+Parameters:
+  DBInstanceIdentifier:
+    Type: String
+    Default: "childcare-db"
+    Description: "RDS PostgreSQL database identifier"
+
+  DBName:
+    Type: String
+    Default: "childcare"
+    Description: "Database name for the PostgreSQL instance"
+
+  DBUsername:
+    Type: String
+    Default: "admin"
+    Description: "Master username for the PostgreSQL database"
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: "Master password for the PostgreSQL database"
+
+  InstanceType:
+    Type: String
+    Default: "t3.micro"
+    AllowedValues: ["t3.micro", "t3.small", "t3.medium"]
+    Description: "EC2 instance type for hosting Django"
+
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: "Key Pair for SSH access to the EC2 instance"
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC where resources will be deployed"
+
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: "Subnet for the RDS instance"
+
+Resources:
+  
+  # Security Group for RDS PostgreSQL
+  RDSPostgreSQLSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow EC2 access to PostgreSQL RDS"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref EC2SecurityGroup # Allows EC2 to access DB
+
+  # RDS PostgreSQL Database
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      Engine: postgres
+      EngineVersion: "15.2"
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBName: !Ref DBName
+      PubliclyAccessible: false
+      VPCSecurityGroups:
+        - !GetAtt RDSPostgreSQLSecurityGroup.GroupId
+      MultiAZ: false
+      StorageEncrypted: true
+      BackupRetentionPeriod: 7
+      DeletionProtection: false
+
+  # Security Group for EC2
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow inbound SSH, HTTP, and Postgres connections"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Allow SSH (change for security)
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # Allow HTTP traffic
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0  # Allow Django traffic
+
+  # IAM Role for EC2 to Access Secrets Manager
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: DjangoEC2Role
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: SecretsManagerAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: "*"
+
+  # IAM Instance Profile
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2InstanceRole
+
+  # EC2 Instance Running Django in Docker
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPairName
+      SecurityGroupIds:
+        - !Ref EC2SecurityGroup
+      SubnetId: !Ref SubnetId
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      ImageId: ami-0c55b159cbfafe1f0  # Update with latest Amazon Linux 2 AMI
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          sudo yum update -y
+          sudo amazon-linux-extras enable docker
+          sudo yum install -y docker
+          sudo service docker start
+          sudo usermod -aG docker ec2-user
+          sudo systemctl enable docker
+          
+          # Install Git and Python
+          sudo yum install -y git python3-pip
+
+          # Install AWS CLI for Secrets Manager access
+          sudo yum install -y aws-cli
+
+          # Clone the Django Project (replace with your repo)
+          git clone https://github.com/your-repo-url/childcare-reservations.git /home/ec2-user/app
+
+          cd /home/ec2-user/app
+
+          # Build and Run Django App in Docker
+          sudo docker build -t childcare-django .
+          sudo docker run -d -p 8000:8000 --name django-container childcare-django
+
+Outputs:
+  EC2PublicIP:
+    Description: "Public IP of the EC2 instance"
+    Value: !GetAtt EC2Instance.PublicIp
+
+  RDSInstanceEndpoint:
+    Description: "RDS PostgreSQL endpoint"
+    Value: !GetAtt RDSInstance.Endpoint.Address
