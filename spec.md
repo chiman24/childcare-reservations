@@ -154,7 +154,7 @@ The Choir Childcare Reservation System is a web application designed to allow ch
 ---
 
 ## **8. Next Steps**
-🚀 **Developers can now begin implementation** using this specification!  
+ **Developers can now begin implementation** using this specification!  
 - **Step 1:** Set up Django + PostgreSQL + AWS EC2.
 - **Step 2:** Build API endpoints & test with Postman.
 - **Step 3:** Develop React frontend & integrate backend API.
@@ -162,5 +162,4 @@ The Choir Childcare Reservation System is a web application designed to allow ch
 
 ---
 
-This document serves as a complete guide for developers to implement the system efficiently. Let me know if you'd like any refinements! 🎯
 
