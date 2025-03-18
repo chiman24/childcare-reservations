@@ -1,0 +1,42 @@
+# Create a Virtual Environment
+python -m venv venv
+source venv/bin/activate  # Mac/Linux
+venv\Scripts\activate     # Windows
+
+# Install Django and Required Packages
+pip install django djangorestframework psycopg2-binary
+
+# Start a New Django Project
+django-admin startproject childcare backend/
+
+# Start a Django App for Reservations
+cd backend
+python manage.py startapp reservations
+
+
+# Open backend/childcare/settings.py, add "reservations" and "rest_framework" to INSTALLED_APPS:
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'reservations',  # Add this
+]
+
+# Run migrations to set up the database:
+python manage.py migrate
+
+# Run the server to test:
+python manage.py runserver
+
+
+Visit http://127.0.0.1:8000 to confirm Django is working.
+
+
+# Making and applying database migrations
+python manage.py makemigrations reservations
+python manage.py migrate
