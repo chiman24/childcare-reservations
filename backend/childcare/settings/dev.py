@@ -1,5 +1,7 @@
 from .base import *
 
+from .mongo_config import *
+
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # DEFAULT_FROM_EMAIL = 'Childcare Reservations <noreply@childcare-reservations.com>'
 

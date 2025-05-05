@@ -1,29 +1,19 @@
-from django.shortcuts import render
-from rest_framework import generics
-from .models import Reservation
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models_mongo import Reservation
 from .serializers import ReservationSerializer
-from django.http import JsonResponse
-import datetime
 
-# Create your views here.
-# API: List & Create Reservations (For Parents)
-class ReservationListCreateView(generics.ListCreateAPIView):
-    queryset = Reservation.objects.all()
-    serializer_class = ReservationSerializer
+class ReservationListCreateView(APIView):
+    def get(self, request):
+        reservations = Reservation.objects.order_by('-date')
+        data = [ReservationSerializer(r).data for r in reservations]
+        return Response(data)
 
-# API: Retrieve, Update, Delete (For Admins)
-class ReservationDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Reservation.objects.all()
-    serializer_class = ReservationSerializer
-
-def get_reservations_by_date(request, date):
-    try:
-        # Validate date format
-        datetime.datetime.strptime(date, "%Y-%m-%d")
-
-        reservations = Reservation.objects.filter(rehearsal_date=date).values()
-        return JsonResponse(list(reservations), safe=False)
-    except ValueError:
-        return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+    def post(self, request):
+        serializer = ReservationSerializer(data=request.data)
+        if serializer.is_valid():
+            reservation = serializer.save()
+            return Response(ReservationSerializer(reservation).data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
