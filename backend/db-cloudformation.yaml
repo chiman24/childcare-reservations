@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template to deploy a PostgreSQL database on RDS and an EC2 instance running Django in a Docker container"
+
+Parameters:
+  DBInstanceIdentifier:
+    Type: String
+    Default: "childcare-db"
+    Description: "RDS PostgreSQL database identifier"
+
+  DBName:
+    Type: String
+    Default: "childcare"
+    Description: "Database name for the PostgreSQL instance"
+
+  DBUsername:
+    Type: String
+    Default: "admin"
+    Description: "Master username for the PostgreSQL database"
+
+  DBPassword:
+    Type: String
+    Default: "Kr4.2^BQzt333"
+    NoEcho: true
+    Description: "Master password for the PostgreSQL database"
+
+  InstanceType:
+    Type: String
+    Default: "t3.micro"
+    AllowedValues: ["t3.micro", "t3.small", "t3.medium"]
+    Description: "EC2 instance type for hosting Django"
+
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: "ec2-us-east-1-keypair"
+    Description: "Key Pair for SSH access to the EC2 instance"
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Default:  "vpc-604cbd1a"
+    Description: "VPC where resources will be deployed"
+
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default:  "subnet-7f58f518"
+    Description: "Subnet for the RDS instance"
+
+Resources:
+  
+  # Security Group for RDS PostgreSQL
+  RDSPostgreSQLSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow EC2 access to PostgreSQL RDS"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref EC2SecurityGroup # Allows EC2 to access DB
+
+  # RDS PostgreSQL Database
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      Engine: postgres
+      EngineVersion: "15.2"
+      DBInstanceClass: db.t4g.micro
+      AllocatedStorage: 20
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBName: !Ref DBName
+      PubliclyAccessible: false
+      VPCSecurityGroups:
+        - !GetAtt RDSPostgreSQLSecurityGroup.GroupId
+      MultiAZ: false
+      StorageEncrypted: true
+      BackupRetentionPeriod: 7
+      DeletionProtection: false
+
+  # Security Group for EC2
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow inbound SSH, HTTP, and Postgres connections"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Allow SSH (change for security)
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # Allow HTTP traffic
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0  # Allow Django traffic

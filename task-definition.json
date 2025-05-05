@@ -1,0 +1,26 @@
+{
+    "family": "big-heart-tech",
+    "executionRoleArn": "arn:aws:iam::721020354128:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+      {
+        "name": "jv-childcare-reservations",
+        "image": "721020354128.dkr.ecr.us-east-1.amazonaws.com/big-heart-tech/jv-childcare-reservations-repo:latest",
+        "memory": 500,
+        "portMappings": [
+          {
+            "containerPort": 8000,
+            "hostPort": 8000
+          }
+        ],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/jv-childcare-reservations",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "jv-childcare-reservations"
+          }
+        }
+      }
+    ]
+  }
+  

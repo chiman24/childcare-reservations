@@ -1,0 +1,12 @@
+Hi {{ parent_name }},
+
+Thank you for your childcare reservation for {{ rehearsal_date }}.
+
+Here are the details you submitted:
+- Number of children: {{ num_children }}
+- Ages of children: {{ child_ages }}
+
+We appreciate your commitment and look forward to seeing you at rehearsal!
+
+Warm regards,  
+The Childcare Team
