@@ -62,14 +62,11 @@ const AdminDashboard = () => {
               <TableRow sx={{ bgcolor: "primary.light" }}>
                 <TableCell sx={{ fontWeight: "bold" }}>Parent Name</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}># of Children</TableCell>
-                {/* <TableCell sx={{ fontWeight: "bold", display: { xs: "none", sm: "table-cell" } }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: "bold", display: { xs: "none", sm: "table-cell" } }}>Phone</TableCell>
-                <TableCell sx={{ fontWeight: "bold", display: { xs: "none", md: "table-cell" } }}>Notes</TableCell> */}
               </TableRow>
             </TableHead>
             <TableBody>
               {reservations.map((res) => (
-                <TableRow key={res.id}>
+                <TableRow key={res._id}>
                   <TableCell>{res.parent_name}</TableCell>
                   <TableCell>
                     {/* {res.num_children} (Age(s): {res.child_ages.join(", ")}) */}
