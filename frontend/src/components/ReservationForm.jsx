@@ -14,7 +14,7 @@ const ReservationForm = () => {
     phone_number: "",
     // rehearsal_date: dayjs().day() <= 1 ? dayjs().day(5).format("YYYY-MM-DD") : dayjs().add(1, "week").day(5).format("YYYY-MM-DD"),
     rehearsal_date: dayjs().day() <= 1 ? dayjs().day(5) : dayjs().add(1, "week").day(5),
-    num_children: 0,
+    num_children: "",
     child_ages: [],
     special_notes: "",
   });
@@ -24,7 +24,7 @@ const ReservationForm = () => {
   };
 
   const handleNumChildrenChange = (e) => {
-    const numChildren = parseInt(e.target.value, 10) || 0;
+    const numChildren = parseInt(e.target.value, 10) || "";
     setFormData({
       ...formData,
       num_children: numChildren,
