@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from "@mui/material";
+import { Container, Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Collapse } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers"
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
@@ -11,6 +11,8 @@ const AdminDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());  // Default to today
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [expandedRow, setExpandedRow] = useState(null);
+
 
   // Fetch reservations for the selected date
   const fetchReservations = async (date) => {
@@ -65,17 +67,39 @@ const AdminDashboard = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {reservations.map((res) => (
-                <TableRow key={res._id}>
-                  <TableCell>{res.parent_name}</TableCell>
-                  <TableCell>
-                    {/* {res.num_children} (Age(s): {res.child_ages.join(", ")}) */}
-                    {res.num_children} {res.child_ages.length > 1 ? `(Ages: ${res.child_ages.join(", ")})` : `(Age: ${res.child_ages[0]})`}
-                  </TableCell>
-                  {/* Add collapsible row */}
-                </TableRow>
-              ))}
+              {reservations.map((res) => {
+                const isOpen = expandedRow === res._id;
+
+                return (
+                  <React.Fragment key={res._id}>
+                    <TableRow
+                      hover
+                      onClick={() => setExpandedRow(isOpen ? null : res._id)}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      <TableCell>{res.parent_name}</TableCell>
+                      <TableCell>
+                        {res.num_children} {res.child_ages.length > 1 ? `(Ages: ${res.child_ages.join(", ")})` : `(Age: ${res.child_ages[0]})`}
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Expandable Row for Notes */}
+                    <TableRow>
+                      <TableCell colSpan={2} sx={{ py: 0, borderBottom: 0 }}>
+                        <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                          <Box p={2}>
+                            <Typography variant="body2" fontStyle="italic">
+                              {res.special_notes ? `Notes: ${res.special_notes}` : "No special notes."}
+                            </Typography>
+                          </Box>
+                        </Collapse>
+                      </TableCell>
+                    </TableRow>
+                  </React.Fragment>
+                );
+              })}
             </TableBody>
+
           </Table>
         </TableContainer>
       ) : (

@@ -28,7 +28,7 @@ class ReservationSerializer(serializers.Serializer):
     child_ages = serializers.ListField(child=serializers.IntegerField())
     email = serializers.EmailField()
     phone_number = serializers.CharField(max_length=15, required=False)
-    # special_notes = serializers.CharField(max_length=500, required=False)
+    special_notes = serializers.CharField(max_length=500, required=False)
     # timestamp = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data):
