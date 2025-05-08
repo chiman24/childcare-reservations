@@ -72,6 +72,7 @@ const AdminDashboard = () => {
                     {/* {res.num_children} (Age(s): {res.child_ages.join(", ")}) */}
                     {res.num_children} {res.child_ages.length > 1 ? `(Ages: ${res.child_ages.join(", ")})` : `(Age: ${res.child_ages[0]})`}
                   </TableCell>
+                  {/* Add collapsible row */}
                 </TableRow>
               ))}
             </TableBody>

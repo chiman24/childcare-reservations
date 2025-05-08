@@ -68,7 +68,7 @@ const ReservationForm = () => {
   return (
     <Container maxWidth="sm">
       <Box my={4}>
-        <Typography variant="h5">Childcare Reservation</Typography>
+        <Typography variant="h5">JCCI Choir Childcare Reservation</Typography>
         <form onSubmit={handleSubmit}>
           <TextField label="Parent Name" name="parent_name" value={formData.parent_name} onChange={handleChange} fullWidth required margin="normal" />
           <TextField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} fullWidth required margin="normal" />
