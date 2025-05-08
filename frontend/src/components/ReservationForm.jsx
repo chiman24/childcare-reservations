@@ -39,11 +39,9 @@ const ReservationForm = () => {
   }
 
   const handleDateChange = (e) => {
-    // console.log(`e is: ${e}`)
-    const formattedRehearsalDate = e.format("YYYY-MM-DD");
     setFormData({
       ...formData,
-      rehearsal_date: formattedRehearsalDate
+      rehearsal_date: e
     })
 
   }
@@ -86,12 +84,12 @@ const ReservationForm = () => {
               name="rehearsal_date" 
               value={formData.rehearsal_date}
               
-              // Only allow selection of future Fridays.  
-              // In a particular week, Monday is the last day that you're allowed to reserve the Friday of that week.
+              // Only allow selection of future Fridays or Saturdays.  
+              // In a particular week, Monday is the last day that you're allowed to reserve the Friday or Saturday of that week.
               shouldDisableDate={(date) => {
                 const today = dayjs();
                 const daysUntilFriday = date.diff(today, "day")
-                return date.day() !== 5 || date.isBefore(dayjs()) || daysUntilFriday < 4 }
+                return ![5, 6].includes(date.day()) || date.isBefore(dayjs()) || daysUntilFriday < 4 }
               } 
               onChange={handleDateChange}
             />
@@ -99,21 +97,6 @@ const ReservationForm = () => {
           {/* End Rehearsal Date */}
 
           <TextField label="Number of Children" name="num_children" type="number" value={formData.num_children} onChange={handleNumChildrenChange} fullWidth required margin="normal" />
-          {/* <TextField
-            select
-            label="Ages of Children"
-            name="child_ages"
-            value={formData.child_ages}
-            onChange={(e) => setFormData({ ...formData, child_ages: [e.target.value] })}
-            fullWidth
-            margin="normal"
-          >
-            {[...Array(10).keys()].map((age) => (
-              <MenuItem key={age} value={age}>
-                {age}
-              </MenuItem>
-            ))}
-          </TextField> */}
 
           {/* Dynamically generated child age dropdowns */}
           {formData.child_ages.map((age, index) => (

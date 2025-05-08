@@ -11,4 +11,7 @@ class Reservation(Document):
     special_notes = StringField(blank=True, null=True)
     timestamp = DateField(auto_now_add=True)  # Auto record submission time
 
-    meta = {'collection': 'childcare_reservations'}
+    meta = {
+            'collection': 'childcare_reservations',
+            'db_alias': 'default'
+    }
